@@ -3,7 +3,7 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import cors from "cors"; // ✅ allow cross-origin requests
+import cors from "cors";
 
 const app = express();
 const port = 3000;
@@ -16,6 +16,8 @@ const uploadDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
   console.log("📁 Created uploads folder");
+} else {
+  console.log("📁 Uploads folder already exists");
 }
 
 // Configure multer storage
@@ -30,12 +32,12 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Basic route
+// Root route
 app.get("/", (req, res) => {
   res.send("Backend is running successfully!");
 });
 
-// 🏓 Simple ping route
+// 🏓 Ping route
 app.get("/ping", (req, res) => {
   res.json({
     message: "pong",
@@ -44,7 +46,7 @@ app.get("/ping", (req, res) => {
   });
 });
 
-// 🩺 Health Endpoint
+// 🩺 Health route (detailed)
 app.get("/health", (req, res) => {
   const stats = {
     status: "✅ healthy",
@@ -59,14 +61,14 @@ app.get("/health", (req, res) => {
   };
   res.json(stats);
 });
-// 📂 File upload route (with hierarchy tree logging)
+
+// 📂 File upload route
 app.post("/upload", upload.array("files", 50), (req, res) => {
   if (!req.files || req.files.length === 0) {
     console.log("⚠️ Upload attempted but no files were sent");
     return res.status(400).json({ success: false, message: "No files uploaded" });
   }
 
-  // Simple file log
   console.log(`📥 Received ${req.files.length} file(s):`);
   req.files.forEach(f => {
     console.log(` - ${f.filename} (${(f.size / 1024).toFixed(2)} KB, ${f.mimetype})`);
@@ -100,7 +102,6 @@ app.post("/upload", upload.array("files", 50), (req, res) => {
   console.log('📂 Upload Tree:');
   printTree(buildTree(req.files));
 
-  // Response back to frontend
   res.json({
     success: true,
     message: `${req.files.length} file(s) uploaded successfully`,

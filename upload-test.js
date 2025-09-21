@@ -7,7 +7,8 @@ form.append("file", fs.createReadStream("./package.json"));
 
 console.log("⏳ Uploading file...");
 
-fetch("http://localhost:3000/upload", { method: "POST", body: form })
+fetch("https://deployment-backend-cu3w.onrender.com/upload", {
+ method: "POST", body: form })
   .then(async (res) => {
     const text = await res.text();
     try {
