@@ -1,3 +1,4 @@
+import fetch from "node-fetch";
 import express from "express";
 import multer from "multer";
 import fs from "fs";
@@ -103,16 +104,34 @@ app.post("/upload", upload.array("files", 50), (req, res) => {
   printTree(buildTree(req.files));
 
   res.json({
-    success: true,
-    message: `${req.files.length} file(s) uploaded successfully`,
-    files: req.files.map(f => ({
-      name: f.filename,
-      path: f.path,
-      size: f.size,
-      mimetype: f.mimetype,
-    })),
-  });
+  success: true,
+  message: `${req.files.length} file(s) uploaded successfully`,
+  files: req.files.map(f => ({
+    name: f.filename,
+    path: f.path,
+    size: f.size,
+    mimetype: f.mimetype,
+  })),
 });
+
+// Trigger Netlify rebuild after successful upload
+(async () => {
+  console.log("📡 Triggering Netlify build hook...");
+  try {
+    const response = await fetch("https://api.netlify.com/build_hooks/68d14f0574c40221cd4f6227", {
+      method: "POST"
+    });
+    if (response.ok) {
+      console.log("✅ Netlify rebuild triggered successfully!");
+    } else {
+      console.log(`⚠️ Failed to trigger Netlify rebuild: ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error("❌ Error triggering Netlify build hook:", error);
+  }
+})();
+
+}); // closes /upload route
 
 app.listen(port, () => {
   console.log(`✅ Server is running at http://localhost:${port}`);
