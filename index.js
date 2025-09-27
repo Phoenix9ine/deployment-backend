@@ -64,7 +64,7 @@ app.get("/health", (req, res) => {
 });
 
 // 📂 File upload route
-app.post("/upload", upload.array("files", 50), (req, res) => {
+app.post("/upload", upload.array("files", 50), async (req, res) => {
   if (!req.files || req.files.length === 0) {
     console.log("⚠️ Upload attempted but no files were sent");
     return res.status(400).json({ success: false, message: "No files uploaded" });
@@ -104,32 +104,35 @@ app.post("/upload", upload.array("files", 50), (req, res) => {
   printTree(buildTree(req.files));
 
   res.json({
-  success: true,
-  message: `${req.files.length} file(s) uploaded successfully`,
-  files: req.files.map(f => ({
-    name: f.filename,
-    path: f.path,
-    size: f.size,
-    mimetype: f.mimetype,
-  })),
-});
+    success: true,
+    message: `${req.files.length} file(s) uploaded successfully`,
+    files: req.files.map(f => ({
+      name: f.filename,
+      path: f.path,
+      size: f.size,
+      mimetype: f.mimetype,
+    })),
+  });
 
-// Trigger Netlify rebuild after successful upload
-(async () => {
-  console.log("📡 Triggering Netlify build hook...");
+  // ✅ Trigger WhatsApp-bot after successful upload
   try {
-    const response = await fetch("https://api.netlify.com/build_hooks/68d14f0574c40221cd4f6227", {
-      method: "POST"
+    console.log("📡 Sending deploy notification to WhatsApp-bot...");
+    const response = await fetch("https://whatsapp-bot-xqkk.onrender.com/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: `🚀 Deploy complete!\nFiles uploaded: ${req.files.length}`
+      }),
     });
+
     if (response.ok) {
-      console.log("✅ Netlify rebuild triggered successfully!");
+      console.log("✅ WhatsApp notification sent successfully!");
     } else {
-      console.log(`⚠️ Failed to trigger Netlify rebuild: ${response.statusText}`);
+      console.log(`⚠️ Failed to notify WhatsApp-bot: ${response.statusText}`);
     }
   } catch (error) {
-    console.error("❌ Error triggering Netlify build hook:", error);
+    console.error("❌ Error notifying WhatsApp-bot:", error);
   }
-})();
 
 }); // closes /upload route
 
