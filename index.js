@@ -114,34 +114,29 @@ mimetype: f.mimetype,
 })),
 });
 
-// ✅ Trigger WhatsApp-bot after successful upload (GET instead of POST)
-try {
-console.log("📡 Sending deploy notification to WhatsApp-bot (via GET)...");
-console.log("🕒 Timestamp:", new Date().toISOString());
-const message = encodeURIComponent(`🚀 Deploy complete! Files uploaded: ${req.files.length}`);
-
-```
-const response = await fetch(`https://whatsapp-bot-xqkk.onrender.com/send?text=${message}`, {
-  method: "GET",
-});
-
-if (response.ok) {
-  console.log("✅ WhatsApp notification sent successfully via GET!");
-} else {
-  console.log(`⚠️ Failed to notify WhatsApp-bot: ${response.status} ${response.statusText}`);
+  // ✅ Trigger WhatsApp-bot after successful upload (GET instead of POST)
   try {
-    const body = await response.text();
-    console.log("🔍 Bot response body:", body);
-  } catch (innerErr) {
-    console.log("⚠️ Could not read bot response body:", innerErr.message);
-  }
-}
-```
+    console.log("📡 Sending deploy notification to WhatsApp-bot (via GET)...");
+    console.log("🕒 Timestamp:", new Date().toISOString());
+    const message = encodeURIComponent(`🚀 Deploy complete! Files uploaded: ${req.files.length}`);
 
-} catch (error) {
-console.error("❌ Error notifying WhatsApp-bot:", error.message, error.stack);
-}
-}); // closes /upload route
+    // Use GET (no body). await is valid because this upload handler is async.
+    const response = await fetch(`https://whatsapp-bot-xqkk.onrender.com/send?text=${message}`);
+
+    if (response.ok) {
+      console.log("✅ WhatsApp notification sent successfully via GET!");
+    } else {
+      console.log(`⚠️ Failed to notify WhatsApp-bot: ${response.status} ${response.statusText}`);
+      try {
+        const body = await response.text();
+        console.log("🔍 Bot response body:", body);
+      } catch (innerErr) {
+        console.log("⚠️ Could not read bot response body:", innerErr.message);
+      }
+    }
+  } catch (error) {
+    console.error("❌ Error notifying WhatsApp-bot:", error);
+  }
 
 app.listen(port, () => {
 console.log(`✅ Server is running at http://localhost:${port}`);
