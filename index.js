@@ -138,6 +138,8 @@ mimetype: f.mimetype,
     console.error("❌ Error notifying WhatsApp-bot:", error);
   }
 
+});
+
 app.listen(port, () => {
-console.log(`✅ Server is running at http://localhost:${port}`);
+  console.log(`✅ Server is running at http://localhost:${port}`);
 });
